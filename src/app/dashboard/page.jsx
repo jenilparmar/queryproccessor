@@ -59,11 +59,11 @@ const DashboardContent = () => {
   };
 
   return (
-    <div className="w-full min-h-screen gap-4 flex flex-col justify-start py-4 bg-white">
+    <div className="w-full min-h-screen md:gap-4 flex flex-col justify-start py-4 bg-white">
       <Header_Dashboard name={"Jenil"} isConnected={!!databases.length} />
 
-      <div className="w-8/12 mx-auto p-6 bg-gray-100 rounded-lg shadow-md mt-6">
-        <h2 className="text-2xl font-bold text-center mb-4">
+      <div className="w-10/12 md:w-8/12 mx-auto p-2 md:p-6 bg-gray-100 rounded-lg shadow-md mt-6">
+        <h2 className="text-green-500 text-2xl font-bold text-center mb-4">
           Database Collections
         </h2>
 
@@ -75,27 +75,27 @@ const DashboardContent = () => {
             {databases.map((db) => (
               <div key={db.database} className="p-4 rounded-lg shadow mb-4">
                 <div className="flex justify-between items-center">
-                  <strong className="text-3xl text-green-600">{db.database}</strong>
+                  <strong className="text-sm md:text-3xl text-black">
+                    {db.database}
+                  </strong>
                   <button
                     onClick={() => toggleCollections(db.database)}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 hover:scale-105 transition-all duration-200"
-                  >
+                    className="px-2 md:px-4 py-1 md:py-2 bg-black  text-green-500 hover:text-black rounded-lg hover:bg-green-600 hover:scale-105 transition-all duration-200">
                     <MdKeyboardArrowDown />
                   </button>
                 </div>
 
                 {openDb[db.database] && (
-                  <ul className="ml-4 mt-2 list-disc list-inside text-gray-700">
+                  <ul className="ml-2 md:ml-4 mt-2 list-disc list-inside ">
                     {db.collections.length > 0 ? (
                       db.collections.map((col) => (
                         <div
                           key={col}
-                          className="w-full flex flex-row justify-between px-2 py-4 hover:bg-gray-300 font-semibold text-green-600"
-                        >
+                          className="text-xs md:text-xl font-medium w-full flex flex-row justify-between px-1 md:px-2 py-2 md:py-4 hover:bg-gray-300 p-3 rounded-2xl md:font-semibold text-black">
                           <p>{col}</p>
                           <BsChatDots
                             onClick={() => handleRouting(col, db.database)}
-                            className="text-2xl hover:text-green-600 hover:scale-105 transition-all duration-200"
+                            className="text-xl md:text-2xl text-black-500 hover:text-green-600 hover:scale-105 transition-all duration-200"
                           />
                         </div>
                       ))
@@ -115,7 +115,10 @@ const DashboardContent = () => {
 
 const DashboardPage = () => {
   return (
-    <Suspense fallback={<p className="text-center text-gray-500">Loading dashboard...</p>}>
+    <Suspense
+      fallback={
+        <p className="text-center text-gray-500">Loading dashboard...</p>
+      }>
       <DashboardContent />
     </Suspense>
   );
