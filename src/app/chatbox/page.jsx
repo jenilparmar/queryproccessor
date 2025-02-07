@@ -1,8 +1,8 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-const ChatBoxPage = () => {
+const ChatBoxContent = () => {
   const searchParams = useSearchParams();
   const dbName = searchParams.get("dbName");
   const colName = searchParams.get("colName");
@@ -15,12 +15,12 @@ const ChatBoxPage = () => {
         <span className="text-yellow-300">{dbName}</span>
       </div>
 
-      {/* Messages Section (Empty for now) */}
+      {/* Messages Section (Placeholder) */}
       <div className="flex-1 p-4 overflow-auto">
         <p className="text-gray-500 text-center">Start querying your database...</p>
       </div>
 
-      {/* Query Input Box */}
+      {/* Query Input */}
       <div className="w-full flex justify-center py-4 bg-white shadow-md">
         <div className="w-8/12 flex gap-3">
           <input
@@ -37,6 +37,14 @@ const ChatBoxPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const ChatBoxPage = () => {
+  return (
+    <Suspense fallback={<p className="text-center text-gray-500">Loading chat...</p>}>
+      <ChatBoxContent />
+    </Suspense>
   );
 };
 
