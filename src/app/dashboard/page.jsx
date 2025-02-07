@@ -1,11 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Header_Dashboard from "../Components/Header_Dashboard";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { BsChatDots } from "react-icons/bs";
-import { useRouter } from "next/navigation";
-const DashboardPage = () => {
+
+const DashboardContent = () => {
   const searchParams = useSearchParams();
   const mongodbUri = searchParams.get("uri");
   const router = useRouter();
@@ -13,11 +13,13 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openDb, setOpenDb] = useState({}); // Track which DB is expanded
+
   const handleRouting = (colName, dbName) => {
     const encodedDbName = encodeURIComponent(dbName);
     const encodedColName = encodeURIComponent(colName);
     router.push(`/chatbox?dbName=${encodedDbName}&colName=${encodedColName}`);
   };
+
   useEffect(() => {
     if (!mongodbUri) {
       setError("MongoDB URI not found in URL.");
@@ -60,7 +62,7 @@ const DashboardPage = () => {
     <div className="w-full min-h-screen gap-4 flex flex-col justify-start py-4 bg-white">
       <Header_Dashboard name={"Jenil"} isConnected={!!databases.length} />
 
-      <div className=" w-8/12 mx-auto p-6 bg-gray-100 rounded-lg shadow-md mt-6">
+      <div className="w-8/12 mx-auto p-6 bg-gray-100 rounded-lg shadow-md mt-6">
         <h2 className="text-2xl font-bold text-center mb-4">
           Database Collections
         </h2>
@@ -71,14 +73,13 @@ const DashboardPage = () => {
         {databases.length > 0 && (
           <>
             {databases.map((db) => (
-              <div key={db.database} className="p-4   rounded-lg shadow mb-4">
+              <div key={db.database} className="p-4 rounded-lg shadow mb-4">
                 <div className="flex justify-between items-center">
-                  <strong className="text-3xl text-green-600">
-                    {db.database}
-                  </strong>
+                  <strong className="text-3xl text-green-600">{db.database}</strong>
                   <button
                     onClick={() => toggleCollections(db.database)}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 hover:scale-105 transition-all duration-200 ">
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 hover:scale-105 transition-all duration-200"
+                  >
                     <MdKeyboardArrowDown />
                   </button>
                 </div>
@@ -89,9 +90,13 @@ const DashboardPage = () => {
                       db.collections.map((col) => (
                         <div
                           key={col}
-                          className="w-full flex flex-row justify-between px-2 py-4 hover:bg-gray-300 font-semibold text-green-600">
+                          className="w-full flex flex-row justify-between px-2 py-4 hover:bg-gray-300 font-semibold text-green-600"
+                        >
                           <p>{col}</p>
-                          <BsChatDots onClick={()=>{handleRouting(col , db.database)}} className="text-2xl hover:text-green-600 hover:scale-105 transition-all duration-200" />
+                          <BsChatDots
+                            onClick={() => handleRouting(col, db.database)}
+                            className="text-2xl hover:text-green-600 hover:scale-105 transition-all duration-200"
+                          />
                         </div>
                       ))
                     ) : (
@@ -105,6 +110,14 @@ const DashboardPage = () => {
         )}
       </div>
     </div>
+  );
+};
+
+const DashboardPage = () => {
+  return (
+    <Suspense fallback={<p className="text-center text-gray-500">Loading dashboard...</p>}>
+      <DashboardContent />
+    </Suspense>
   );
 };
 
