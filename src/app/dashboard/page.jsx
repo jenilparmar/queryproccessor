@@ -4,20 +4,20 @@ import Header_Dashboard from "../Components/Header_Dashboard";
 import { useSearchParams } from "next/navigation";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { BsChatDots } from "react-icons/bs";
-import Router from "next/navigation";
+import { useRouter } from "next/navigation";
 const DashboardPage = () => {
   const searchParams = useSearchParams();
   const mongodbUri = searchParams.get("uri");
-const router = useRouter();  
+  const router = useRouter();
   const [databases, setDatabases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openDb, setOpenDb] = useState({}); // Track which DB is expanded
-    const handleRouting = (colName , dbName)=>{
-        const encodedDbName = encodeURIComponent(dbName);
-        const encodedColName = encodeURIComponent(colName);
-        router.push(`/chatBox?dbName=${encodedDbName}&colName=${encodedColName}`)
-    }
+  const handleRouting = (colName, dbName) => {
+    const encodedDbName = encodeURIComponent(dbName);
+    const encodedColName = encodeURIComponent(colName);
+    router.push(`/chatbox?dbName=${encodedDbName}&colName=${encodedColName}`);
+  };
   useEffect(() => {
     if (!mongodbUri) {
       setError("MongoDB URI not found in URL.");
@@ -91,7 +91,7 @@ const router = useRouter();
                           key={col}
                           className="w-full flex flex-row justify-between px-2 py-4 hover:bg-gray-300 font-semibold text-green-600">
                           <p>{col}</p>
-                          <BsChatDots className="text-2xl hover:text-green-600 hover:scale-105 transition-all duration-200" />
+                          <BsChatDots onClick={()=>{handleRouting(col , db.database)}} className="text-2xl hover:text-green-600 hover:scale-105 transition-all duration-200" />
                         </div>
                       ))
                     ) : (
