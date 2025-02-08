@@ -90,7 +90,7 @@ const ChatBoxContent = () => {
   return (
     <div className="w-full -screen flex flex-col justify-between py-4 bg-gray-100">
       {/* Query Result Display */}
-      <div className="w-full flex flex-row gap-4 pb-20">
+      <div className="w-full flex flex-col lg:flex-row md:flex-row gap-2 lg:gap-6 md:gap-4 pb-20">
         {" "}
         {/* Added padding-bottom for fixed input */}
         <div className="w-full flex flex-col justify-center p-4 overflow-auto  text-white rounded-lg shadow-lg">
@@ -125,11 +125,11 @@ const ChatBoxContent = () => {
         </div>
         {/* Graph Visualization */}
         {graphData && (
-          <div className="w-8/12 mx-auto mt-6 bg-white p-4 rounded-lg shadow-lg">
-            <h2 className="text-center text-black text-xl font-semibold mb-4">
+          <div className="w-full md:w-8/12 mx-auto flex flex-col mt-6 bg-white md:p-4 rounded-lg shadow-lg">
+            <h2 className="text-center text-black text-xl font-semibold my-4">
               Graph Visualization
             </h2>
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer className={"self-center"} width="100%" height={400}>
               {graphData.chartType === "barchart" ? (
                 <BarChart data={response.slice(graphStartIndex, graphEndIndex)}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -166,7 +166,7 @@ const ChatBoxContent = () => {
                 </PieChart>
               )}
             </ResponsiveContainer>
-            <div className="flex items-center gap-4 mt-4">
+            <div className=" px-2 flex items-center md:gap-4 mt-4">
               <label className="text-black">Start Index:</label>
               <input
                 type="number"
@@ -194,18 +194,18 @@ const ChatBoxContent = () => {
       </div>
       {/* Fixed Input & Buttons */}
       <div className="fixed bottom-0 w-full flex justify-center py-4 bg-white shadow-md">
-        <div className="w-8/12 flex gap-3">
+        <div className=" md:w-8/12 flex gap-3">
           <input
             onChange={(e) => setInput(e.target.value)}
             value={input}
             type="text"
-            className="flex-1 text-black h-12 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="flex-1 px-2 text-black h-12 md:px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
             placeholder="Enter your query here..."
             disabled={loading} // Disable input while loading
           />
           <button
             onClick={handleSendQuery}
-            className="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
+            className="px-2 md:px-6 md:py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
             disabled={loading}>
             {loading==1 ? <Spinner animation="border" size="sm" /> : "Send"}
           </button>
@@ -213,7 +213,7 @@ const ChatBoxContent = () => {
             onClick={handleVisualize}
             className={`${
               response.length === 0 ? "cursor-not-allowed opacity-50" : ""
-            } px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition`}
+            } px-2 md:px-6 md:py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition`}
             disabled={response.length === 0 || loading}>
             {loading==2 ? (
               <Spinner animation="border" size="sm" />
