@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-async function getGraphAxesFromGEMINI(sampleData) {
+async function getGraphAxesAndChartType(sampleData) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `
-    You are a data visualization expert. Analyze the given **sample data schema** and determine the best parameters for the **X-axis and Y-axis** in a graph.
+    You are a data visualization expert. Analyze the given **sample data schema** and determine the best parameters for the **X-axis and Y-axis** in a graph, along with the best chart type.
 
     ### **Guidelines:**
     - **Ensure that X-axis and Y-axis are NEVER NULL.** Always select the best possible values.
@@ -14,16 +14,20 @@ async function getGraphAxesFromGEMINI(sampleData) {
     - Identify **numeric fields** for the **Y-axis** (e.g., "price", "sales", "count", "value", "amount").
     - If no numeric field is available for **Y-axis**, use the **count of occurrences** of a categorical field.
     - If no time-based field is found for **X-axis**, use the **first available categorical field**.
-    - Return at least **one option** for both X and Y axes.
+    - **Determine the best chart type** based on the data:
+      - **"linechart"** → If the X-axis is a time-based field.
+      - **"barchart"** → If the X-axis is categorical and the Y-axis is numeric.
+      - **"piechart"** → If the data represents categorical proportions (e.g., distribution of roles or categories).
     - **Only return JSON**—do **not** include explanations or formatting.
-
+    - don't add '_id' as xaxis or yaxis NEVER use _id in anywhere in axis. 
     ### **Example Output Format:**
     \`\`\`json
     {
-      "xAxis": "name",
-      "yAxis": "role_count",
-      "xAxisOptions": ["name", "email", "role"],
-      "yAxisOptions": ["role_count"]
+      "xAxis": "date",
+      "yAxis": "sales",
+      "xAxisOptions": ["date", "category"],
+      "yAxisOptions": ["sales", "revenue", "profit"],
+      "chartType": "linechart"
     }
     \`\`\`
 
@@ -43,25 +47,28 @@ async function getGraphAxesFromGEMINI(sampleData) {
             return null;
         }
 
-        let jsonAxes;
+        let jsonResult;
         try {
-            jsonAxes = JSON.parse(jsonMatch[0]); 
+            jsonResult = JSON.parse(jsonMatch[0]); 
         } catch (error) {
             console.error("Failed to parse extracted JSON:", jsonMatch[0]);
             return null;
         }
 
         // Ensure xAxis and yAxis are never null
-        if (!jsonAxes.xAxis && jsonAxes.xAxisOptions.length > 0) {
-            jsonAxes.xAxis = jsonAxes.xAxisOptions[0]; // Pick the first categorical field
+        if (!jsonResult.xAxis && jsonResult.xAxisOptions.length > 0) {
+            jsonResult.xAxis = jsonResult.xAxisOptions[0]; // Pick first categorical field
         }
-        if (!jsonAxes.yAxis && jsonAxes.yAxisOptions.length > 0) {
-            jsonAxes.yAxis = jsonAxes.yAxisOptions[0]; // Pick the first numeric field
+        if (!jsonResult.yAxis && jsonResult.yAxisOptions.length > 0) {
+            jsonResult.yAxis = jsonResult.yAxisOptions[0]; // Pick first numeric field
         }
-        
-        return jsonAxes;
+        if (!jsonResult.chartType) {
+            jsonResult.chartType = "barchart"; // Default to bar chart if uncertain
+        }
+
+        return jsonResult;
     } catch (error) {
-        console.error("Error generating graph axes from Gemini:", error);
+        console.error("Error generating graph axes and chart type:", error);
         return null;
     }
 }
@@ -76,7 +83,7 @@ export async function POST(req) {
             return NextResponse.json({ error: "Invalid or empty sampleData" }, { status: 400 });
         }
 
-        const axes = await getGraphAxesFromGEMINI(sampleData);
+        const axes = await getGraphAxesAndChartType(sampleData);
 
         if (!axes) {
             return NextResponse.json({ error: "Failed to determine axes" }, { status: 500 });

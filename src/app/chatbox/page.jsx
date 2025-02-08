@@ -1,72 +1,157 @@
 "use client";
 import React, { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const ChatBoxContent = () => {
   const searchParams = useSearchParams();
   const dbName = searchParams.get("dbName");
   const colName = searchParams.get("colName");
-
   const uri = searchParams.get("uri")?.trim().replace(/\s/g, "+"); // Replace spaces with '+'
-  
 
   const [input, setInput] = useState("");
   const [response, setResponse] = useState([]);
+  const [graphData, setGraphData] = useState(null); // Store graph axes & type
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
- const handleSendQuery = async () => {
-  if (!input.trim()) return;
+  // Handle Query Submission
+  const handleSendQuery = async () => {
+    if (!input.trim()) return;
+    setError("");
+    try {
+      const res = await fetch("/api/GetResponseOfQuery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: input,
+          dbname: dbName,
+          colName: colName,
+          uri: uri,
+        }),
+      });
 
-  // setLoading(true);
-  setError("");
+      if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
 
-  try {
-    const res = await fetch("/api/GetResponseOfQuery", {  // Ensure correct API path
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ query: input, dbname: dbName, colName: colName, uri: uri }),
-    });
+      const data = await res.json();
+      setResponse(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || "Something went wrong!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (!res.ok) {
-      const errorText = await res.text(); // Read error message
-      throw new Error(`Error ${res.status}: ${errorText}`);
+  // // Handle Visualization
+  const handleVisualize = async () => {
+    if (response.length === 0) return;
+
+    const firstEntry = response[0]; // Take only the first entry
+    if (!firstEntry || Object.keys(firstEntry).length === 0) {
+      setError("Invalid data for visualization.");
+      return;
     }
 
-    const data = await res.json();
-    
-    if (Array.isArray(data)) {  // Ensure valid response before updating state
-      setResponse(data);
-    } else {
-      throw new Error("Unexpected response format");
+    try {
+      const res = await fetch("/api/GetVisualisation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sampleData: [firstEntry] }), // Send only first entry
+      });
+
+      if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
+
+      const graphConfig = await res.json();
+      setGraphData(graphConfig); // Save graph configuration
+      alert(graphConfig.chartType);
+    } catch (err) {
+      setError(err.message || "Failed to fetch graph configuration.");
     }
-  } catch (err) {
-    console.error("API Request Error:", err.message);
-    setError(err.message || "Something went wrong! Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="w-full min-h-screen flex flex-col justify-between py-4 bg-gray-100">
-
-      {/* Messages Section */}
-      <div className="flex-1 p-4 overflow-auto bg-black w-8/12 self-center text-white rounded-lg shadow-lg">
-        {loading ? (
-          <p className="text-gray-400 text-center">Fetching data...</p>
-        ) : error ? (
-          <p className="text-red-500 text-center">{error}</p>
-        ) : response.length > 0 ? (
-          <pre className="text-green-400">{JSON.stringify(response, null, 2)}</pre>
-        ) : (
-          <p className="text-gray-500 text-center">Start querying your database...</p>
+      {/* Query Result Display */}
+      <div className="w-full flex flex-row">
+        <div className="flex-1 p-4 overflow-auto  w-8/12 self-center text-white rounded-lg shadow-lg">
+          {loading ? (
+            <p className="text-gray-400 text-center">Fetching data...</p>
+          ) : error ? (
+            <p className="text-red-500 text-center">{error}</p>
+          ) : response.length > 0 ? (
+            <pre className="text-green-400 max-h-screen">
+              {JSON.stringify(response, null, 2)}
+            </pre>
+          ) : (
+            <p className="text-gray-500 text-center">
+              Start querying your database...
+            </p>
+          )}
+        </div>
+        {/* Graph Visualization */}
+        {graphData && (
+          <div className="w-8/12 mx-auto mt-6 bg-white p-4 rounded-lg shadow-lg">
+            <h2 className="text-center text-xl font-semibold mb-4">
+              Graph Visualization
+            </h2>
+            <ResponsiveContainer width="100%" height={400}>
+              {graphData.chartType === "barchart" ? (
+                <BarChart data={response.slice(0, 50)}>
+                  {" "}
+                  {/* Limit Data Here */}
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey={graphData.xAxis} />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey={graphData.yAxis} fill="#4CAF50" />
+                </BarChart>
+              ) : graphData.chartType === "linechart" ? (
+                <LineChart data={response.slice(0, 50)}>
+                  {" "}
+                  {/* Limit Data Here */}
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey={graphData.xAxis} />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey={graphData.yAxis}
+                    stroke="#2196F3"
+                  />
+                </LineChart>
+              ) : (
+                <PieChart>
+                  <Tooltip />
+                  <Legend />
+                  <Pie
+                    data={response.slice(0, 50)}
+                    dataKey={graphData.yAxis}
+                    nameKey={graphData.xAxis}
+                    fill="#FF5722"
+                    label
+                  />
+                </PieChart>
+              )}
+            </ResponsiveContainer>
+          </div>
         )}
       </div>
-
-      {/* Query Input */}
+      {/* Query Input & Buttons */}
       <div className="w-full flex justify-center py-4 bg-white shadow-md">
         <div className="w-8/12 flex gap-3">
           <input
@@ -79,14 +164,15 @@ const ChatBoxContent = () => {
           <button
             onClick={handleSendQuery}
             className="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
-            disabled={loading}
-          >
+            disabled={loading}>
             {loading ? "Loading..." : "Send"}
           </button>
           <button
-            className={`${response.length === 0 ? "cursor-not-allowed opacity-50" : ""} px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition`}
-            disabled={response.length === 0}
-          >
+            onClick={handleVisualize}
+            className={`${
+              response.length === 0 ? "cursor-not-allowed opacity-50" : ""
+            } px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition`}
+            disabled={response.length === 0}>
             Visualize Graph
           </button>
         </div>
@@ -97,7 +183,8 @@ const ChatBoxContent = () => {
 
 const ChatBoxPage = () => {
   return (
-    <Suspense fallback={<p className="text-center text-gray-500">Loading chat...</p>}>
+    <Suspense
+      fallback={<p className="text-center text-gray-500">Loading chat...</p>}>
       <ChatBoxContent />
     </Suspense>
   );
