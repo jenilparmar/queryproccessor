@@ -17,7 +17,8 @@ const DashboardContent = () => {
   const handleRouting = (colName, dbName) => {
     const encodedDbName = encodeURIComponent(dbName);
     const encodedColName = encodeURIComponent(colName);
-    router.push(`/chatbox?dbName=${encodedDbName}&colName=${encodedColName}`);
+    const encodedURI = encodeURIComponent(mongodbUri)
+    router.push(`/chatbox?dbName=${encodedDbName}&colName=${encodedColName}&uri=${encodedURI}`);
   };
 
   useEffect(() => {
