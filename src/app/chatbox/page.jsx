@@ -82,19 +82,20 @@ const ChatBoxContent = () => {
 
       const graphConfig = await res.json();
       setGraphData(graphConfig);
-      setLoading(0)
+      setLoading(0);
     } catch (err) {
       setError(err.message || "Failed to fetch graph configuration.");
     }
   };
   return (
-    <div className="w-full -screen flex flex-col justify-between py-4 bg-gray-100">
+    <div className="w-full h-screen flex flex-col justify-between py-4 bg-gray-100">
       {/* Query Result Display */}
-      <div className="w-full flex flex-col lg:flex-row md:flex-row gap-2 lg:gap-6 md:gap-4 pb-20">
+     <div>
+     <div className="w-full max-h-screen flex flex-col lg:flex-row md:flex-row gap-2 lg:gap-6 md:gap-4 pb-20">
         {" "}
         {/* Added padding-bottom for fixed input */}
         <div className="w-full flex flex-col justify-center p-4 overflow-auto  text-white rounded-lg shadow-lg">
-          {loading==1 ? (
+          {loading == 1 ? (
             <div className="flex justify-center items-center">
               <Spinner animation="border" variant="success" />{" "}
               {/* Loading spinner */}
@@ -129,7 +130,10 @@ const ChatBoxContent = () => {
             <h2 className="text-center text-black text-xl font-semibold my-4">
               Graph Visualization
             </h2>
-            <ResponsiveContainer className={"self-center"} width="100%" height={400}>
+            <ResponsiveContainer
+              className={"self-center"}
+              width="100%"
+              height={400}>
               {graphData.chartType === "barchart" ? (
                 <BarChart data={response.slice(graphStartIndex, graphEndIndex)}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -140,7 +144,8 @@ const ChatBoxContent = () => {
                   <Bar dataKey={graphData.yAxis} fill="#4CAF50" />
                 </BarChart>
               ) : graphData.chartType === "linechart" ? (
-                <LineChart data={response.slice(graphStartIndex, graphEndIndex)}>
+                <LineChart
+                  data={response.slice(graphStartIndex, graphEndIndex)}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey={graphData.xAxis} />
                   <YAxis />
@@ -192,35 +197,44 @@ const ChatBoxContent = () => {
           </div>
         )}
       </div>
+     </div>
       {/* Fixed Input & Buttons */}
-      <div className="fixed bottom-0 w-full flex justify-center py-4 bg-white shadow-md">
-        <div className=" md:w-8/12 flex gap-3">
+      <div className="w-full flex justify-center py-4 bg-white shadow-md">
+        <div className="w-full max-w-4xl px-4 flex flex-col md:flex-row gap-3">
+          {/* Input Field */}
           <input
             onChange={(e) => setInput(e.target.value)}
             value={input}
             type="text"
-            className="flex-1 px-2 text-black h-12 md:px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="w-full md:flex-1 px-3 py-3 text-black text-sm md:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
             placeholder="Enter your query here..."
             disabled={loading} // Disable input while loading
           />
-          <button
-            onClick={handleSendQuery}
-            className="px-2 md:px-6 md:py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
-            disabled={loading}>
-            {loading==1 ? <Spinner animation="border" size="sm" /> : "Send"}
-          </button>
-          <button
-            onClick={handleVisualize}
-            className={`${
-              response.length === 0 ? "cursor-not-allowed opacity-50" : ""
-            } px-2 md:px-6 md:py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition`}
-            disabled={response.length === 0 || loading}>
-            {loading==2 ? (
-              <Spinner animation="border" size="sm" />
-            ) : (
-              "Visualize Graph"
-            )}
-          </button>
+
+          {/* Button Container (For Better Mobile Layout) */}
+          <div className="flex gap-2 md:gap-3 justify-center md:justify-start w-full md:w-auto">
+            {/* Send Button */}
+            <button
+              onClick={handleSendQuery}
+              className="w-full md:w-24 h-12 px-4 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
+              disabled={loading}>
+              {loading == 1 ? <Spinner animation="border" size="sm" /> : "Send"}
+            </button>
+
+            {/* Visualize Graph Button */}
+            <button
+              onClick={handleVisualize}
+              className={`w-full md:w-32 h-12 px-4 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition ${
+                response.length === 0 ? "cursor-not-allowed opacity-50" : ""
+              }`}
+              disabled={response.length === 0 || loading}>
+              {loading == 2 ? (
+                <Spinner animation="border" size="sm" />
+              ) : (
+                "Visualize"
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -229,7 +243,8 @@ const ChatBoxContent = () => {
 
 const ChatBoxPage = () => {
   return (
-    <Suspense fallback={<p className="text-center text-gray-500">Loading chat...</p>}>
+    <Suspense
+      fallback={<p className="text-center text-gray-500">Loading chat...</p>}>
       <ChatBoxContent />
     </Suspense>
   );
