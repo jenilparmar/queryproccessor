@@ -17,9 +17,9 @@ export async function POST(req) {
     await client.connect();
     const database = client.db(dbname);
     const collection = database.collection(colName);
-
+    const sampleData = await collection.findOne();
     // Get MongoDB query from Gemini
-    const responseFromGemini = await getResponseFromGEMINI(query);
+    const responseFromGemini = await getResponseFromGEMINI(query , sampleData);
     if (!responseFromGemini) {
       throw new Error("Invalid query from Gemini");
     }
