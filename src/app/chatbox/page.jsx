@@ -228,12 +228,10 @@ const ChatBoxContent = () => {
 };
 
 export default ChatBoxContent;
-
 const ChatBoxPage = () => {
   return (
-    <Suspense
-      fallback={<p className="text-center text-gray-500">Loading chat...</p>}>
+    <Suspense fallback={<p className="text-center text-gray-500">Loading chat...</p>}>
       <ChatBoxContent />
     </Suspense>
   );
-};
+}
