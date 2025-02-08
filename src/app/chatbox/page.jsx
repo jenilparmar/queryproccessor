@@ -1,12 +1,16 @@
 "use client";
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 const ChatBoxContent = () => {
   const searchParams = useSearchParams();
   const dbName = searchParams.get("dbName");
   const colName = searchParams.get("colName");
+  const [input , setInput ]= useState("")
+  const [response , setResponse] = useState([]);
+  const handleSendQuery=()=>{
 
+  }
   return (
     <div className="w-full min-h-screen flex flex-col justify-between py-4 bg-gray-100">
       {/* Header */}
@@ -16,22 +20,26 @@ const ChatBoxContent = () => {
       </div>
 
       {/* Messages Section (Placeholder) */}
-      <div className="flex-1 p-4 overflow-auto">
+      <div className="flex-1 p-4 overflow-auto bg-black w-8/12 self-center">
         <p className="text-gray-500 text-center">Start querying your database...</p>
+
       </div>
 
       {/* Query Input */}
       <div className="w-full flex justify-center py-4 bg-white shadow-md">
         <div className="w-8/12 flex gap-3">
           <input
+          onChange={(e)=>{
+            setInput(e.target.value)
+          }}
             type="text"
-            className="flex-1 h-12 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="flex-1 text-black h-12 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
             placeholder="Enter your query here..."
           />
-          <button className="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition">
+          <button onClick={handleSendQuery} className="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition">
             Send
           </button>
-          <button className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition">
+          <button className={`${response.length==0?"cursor-not-allowed":""} px-6 py-2  bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition`}>
             Visualize Graph
           </button>
         </div>
