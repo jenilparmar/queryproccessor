@@ -59,19 +59,20 @@ export async function POST(req) {
             try {
                 const collection = database.collection(col);
                 let data;
-
+            
                 if (Array.isArray(mongoQuery)) {
-                    // Aggregation query
-                    data = await collection.aggregate(mongoQuery).toArray();
+                    // Aggregation query with timeout
+                    data = await collection.aggregate(mongoQuery, { maxTimeMS: 60000 }).toArray();
                 } else {
-                    // Find query
-                    data = await collection.find(mongoQuery).toArray();
+                    // Find query with a limit to avoid excessive data
+                    data = await collection.find(mongoQuery).limit(1000).toArray();
                 }
-
+            
                 if (data.length) results.push({ collection: col, data });
             } catch (err) {
                 console.error(`Query error in collection ${col}:`, err);
             }
+            
         }
 
         return new Response(JSON.stringify(results), { status: 200 });
