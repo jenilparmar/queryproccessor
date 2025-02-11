@@ -44,15 +44,17 @@ const ChatBoxContent = () => {
         body: JSON.stringify({
           query: input,
           dbname: dbName,
-          colName: colName,
           uri: uri,
         }),
       });
 
       if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
-
+      console.log("Wait data is getting!!!");
+      
       const data = await res.json();
       setResponse(Array.isArray(data) ? data : []);
+      console.log("Got the Data");
+      
       setVisibleCount(30); // Reset visible count
     } catch (err) {
       setError(err.message || "Something went wrong!");
