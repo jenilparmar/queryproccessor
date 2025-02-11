@@ -53,6 +53,8 @@ const ChatBoxContent = () => {
       
       const data = await res.json();
       setResponse(Array.isArray(data) ? data : []);
+      console.log(data);
+      
       console.log("Got the Data");
       
       setVisibleCount(30); // Reset visible count
